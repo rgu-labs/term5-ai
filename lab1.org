@@ -25,14 +25,15 @@ python3 -m venv .venv
 
 #+begin_src python :results output :hlines
 import random
+import time
 import numpy as np
 from collections import Counter
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-random.seed(42)
-np.random.seed(42)
+random.seed(int(time.time()))
+np.random.seed(int(time.time()))
 
 n_classes = random.randint(2, 5)
 k = random.randint(3, 7)
@@ -77,5 +78,6 @@ plt.savefig('lab1_knn.png', dpi=120)
 #+end_src
 
 #+RESULTS:
+: [0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1]
 
-[[./lab1_knn.png]]
+[[file:lab1_knn.png]]

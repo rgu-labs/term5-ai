@@ -1,0 +1,3 @@
+#+title: README
+
+* Labs for "Основы искуственного интеллекта" subject
