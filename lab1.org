@@ -1,4 +1,4 @@
-#+title: Lab1 Task
+#+title: Lab1
 #+author: koftamainee
 
 * Задание
@@ -27,7 +27,6 @@ import time
 import numpy as np
 from collections import Counter
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 random.seed(int(time.time()))
@@ -72,10 +71,9 @@ plt.ylabel('y')
 plt.title(f'KNN: classes={n_classes}, k={k}')
 plt.legend()
 plt.grid(alpha=0.3)
-plt.savefig('lab1_knn.png', dpi=120)
+plt.show()
 #+end_src
 
 #+RESULTS:
-: [3, 1, 1, 4, 3, 2, 3, 4, 3, 2, 1, 4, 0, 1, 2, 0, 4, 0, 4, 0]
+: [1, 0, 1, 2, 1, 1, 2, 2, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 2, 1]
 
-[[file:lab1_knn.png]]
