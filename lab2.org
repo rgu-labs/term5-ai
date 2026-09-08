@@ -11,3 +11,89 @@
    - Результат второй итерации
    - Результат последней итерации
 5. Программа генерирует изображение, а так же количество итераций, за которое центроиды стабилизировались
+
+* Окружение
+#+begin_src bash :results output
+python3 -m venv .venv
+.venv/bin/pip install --quiet matplotlib numpy
+.venv/bin/python -c "import matplotlib, numpy; print('deps ok')"
+#+end_src
+
+#+RESULTS:
+: deps ok
+
+* Решение
+
+#+begin_src python :results output :hlines
+import random
+import time
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+
+random.seed(int(time.time()))
+np.random.seed(int(time.time()))
+
+n_points = 100
+n_clusters = random.randint(2, 5)
+
+points = np.array([np.random.uniform(-10, 10, 2) for _ in range(n_points)])
+
+centroids = points[random.sample(range(n_points), n_clusters)]
+
+def assign(points, centroids):
+    dists = np.linalg.norm(points[:, None, :] - centroids[None, :, :], axis=2)
+    return np.argmin(dists, axis=1)
+
+def update(points, labels, n_clusters):
+    new = []
+    for c in range(n_clusters):
+        members = points[labels == c]
+        if len(members) == 0:
+            new.append(points[random.randrange(n_points)])
+            continue
+        d = np.linalg.norm(members[:, None, :] - members[None, :, :], axis=2)
+        total = d.sum(axis=1)
+        new.append(members[np.argmin(total)])
+    return np.array(new)
+
+labels = assign(points, centroids)
+history = [(centroids.copy(), labels.copy())]
+old = None
+iterations = 0
+while old is None or not np.array_equal(labels, old):
+    old = labels
+    centroids = update(points, labels, n_clusters)
+    labels = assign(points, centroids)
+    iterations += 1
+    if iterations in (1, 2):
+        history.append((centroids.copy(), labels.copy()))
+history.append((centroids.copy(), labels.copy()))
+
+print('iterations', iterations)
+print('centroids\n', centroids)
+
+cmap = plt.cm.tab10.colors
+fig, axs = plt.subplots(2, 2, figsize=(11, 10))
+order = [axs[0, 0], axs[0, 1], axs[1, 1], axs[1, 0]]
+titles = ['Data points', 'Iteration 1', 'Iteration 2', f'Final iteration ({iterations})']
+for ax, (cen, lab), title in zip(order, history, titles):
+    for c in range(n_clusters):
+        members = points[lab == c]
+        if len(members) == 0:
+            continue
+        ax.scatter(members[:, 0], members[:, 1], color=cmap[c], s=30, label=f'cluster {c}')
+    ax.scatter(cen[:, 0], cen[:, 1], color='black', marker='x', s=90, label='centroid')
+    ax.set_title(title)
+    ax.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+#+end_src
+
+#+RESULTS:
+: iterations 4
+: centroids
+:  [[ 3.33009408  8.82117898]
+:  [ 5.37730677 -0.73369868]
+:  [-4.83971875  1.51683159]
+:  [ 2.80742438 -6.48764904]]
