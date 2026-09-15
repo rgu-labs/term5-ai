@@ -4,7 +4,7 @@
 * Задание
 1. Случайные 100 точек
 2. Случайное число кластеров (от 2 до 5)
-3. Реализовать кластеризацию методом k mids
+3. Реализовать кластеризацию методом k means
 4. В одном изображениии, разделенных на несколько точек matplotlib
    - Набор точек
    - Результат первой итерации (группировка случайно сгенерированных центроидов)
@@ -32,68 +32,64 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-random.seed(int(time.time()))
-np.random.seed(int(time.time()))
+def kmeans(points: np.ndarray, centroids: np.ndarray, EPS: float) -> tuple[np.ndarray, np.ndarray, int, list[tuple[np.ndarray, np.ndarray]]]:
+    snapshots = []
+    iters = 0
+    while True:
+        iters += 1
+        dists = np.linalg.norm(points[:, None, :] - centroids[None, :, :], axis=2)
+        labels = np.argmin(dists, axis=1)
+        snapshots.append((labels.copy(), centroids.copy()))
+        means = np.array([points[labels == i].mean(axis=0)
+                          if np.any(labels == i) else centroids[i]
+                          for i in range(k)])
+        if np.allclose(means, centroids, atol=EPS):
+            centroids = means
+            break
+        centroids = means
+    return labels, centroids, iters, snapshots
 
-n_points = 100
-n_clusters = random.randint(2, 5)
 
-points = np.array([np.random.uniform(-10, 10, 2) for _ in range(n_points)])
+seed = 52
+random.seed(seed)
+np.random.seed(seed)
 
-centroids = points[random.sample(range(n_points), n_clusters)]
 
-def assign(points, centroids):
-    dists = np.linalg.norm(points[:, None, :] - centroids[None, :, :], axis=2)
-    return np.argmin(dists, axis=1)
+k = random.randint(2, 5)
+points = np.random.uniform(-10, 10, size=(100, 2))
+centroids = np.random.uniform(-10, 10, size=(k, 2))
 
-def update(points, labels, n_clusters):
-    new = []
-    for c in range(n_clusters):
-        members = points[labels == c]
-        if len(members) == 0:
-            new.append(points[random.randrange(n_points)])
-            continue
-        d = np.linalg.norm(members[:, None, :] - members[None, :, :], axis=2)
-        total = d.sum(axis=1)
-        new.append(members[np.argmin(total)])
-    return np.array(new)
+labels, final_centroids, iters, snapshots = kmeans(points, centroids, EPS=1e-6)
 
-labels = assign(points, centroids)
-history = [(centroids.copy(), labels.copy())]
-old = None
-iterations = 0
-while old is None or not np.array_equal(labels, old):
-    old = labels
-    centroids = update(points, labels, n_clusters)
-    labels = assign(points, centroids)
-    iterations += 1
-    if iterations in (1, 2):
-        history.append((centroids.copy(), labels.copy()))
-history.append((centroids.copy(), labels.copy()))
+fig, axes = plt.subplots(2, 2, figsize=(10, 10))
+axes = axes.flatten()
+cmap = matplotlib.colormaps.get_cmap('tab10').resampled(k)
 
-print('iterations', iterations)
-print('centroids\n', centroids)
+axes[0].set_title('Points')
+axes[0].scatter(points[:, 0], points[:, 1], s=30)
 
-cmap = plt.cm.tab10.colors
-fig, axs = plt.subplots(2, 2, figsize=(11, 10))
-order = [axs[0, 0], axs[0, 1], axs[1, 1], axs[1, 0]]
-titles = ['Data points', 'Iteration 1', 'Iteration 2', f'Final iteration ({iterations})']
-for ax, (cen, lab), title in zip(order, history, titles):
-    for c in range(n_clusters):
-        members = points[lab == c]
-        if len(members) == 0:
-            continue
-        ax.scatter(members[:, 0], members[:, 1], color=cmap[c], s=30, label=f'cluster {c}')
-    ax.scatter(cen[:, 0], cen[:, 1], color='black', marker='x', s=90, label='centroid')
-    ax.set_title(title)
-    ax.grid(alpha=0.3)
+for i, (s_labels, s_centroids) in enumerate(snapshots[:2], start=1):
+    axes[i].set_title(f'Iteration {i}')
+    axes[i].scatter(points[:, 0], points[:, 1], c=s_labels, cmap=cmap, s=30)
+    axes[i].scatter(s_centroids[:, 0], s_centroids[:, 1], marker='x', s=120, color='black', linewidths=2)
+
+last_labels, last_centroids = snapshots[-1]
+axes[3].set_title(f'Iteration {iters} (last)')
+axes[3].scatter(points[:, 0], points[:, 1], c=last_labels, cmap=cmap, s=30)
+axes[3].scatter(last_centroids[:, 0], last_centroids[:, 1], marker='x', s=120, color='black', linewidths=2)
+
 plt.tight_layout()
+print(f"iterations {iters}")
+print("centroids")
+print(final_centroids)
+
 plt.show()
 #+end_src
 
 #+RESULTS:
-: iterations 4
+: iterations 6
 : centroids
-:  [[-1.76014091  5.52221989]
-:  [-5.81784403 -5.45337848]
-:  [ 4.77267898 -4.26344469]]
+: [[-4.06721945  6.63870213]
+:  [ 4.78015489 -6.05388542]
+:  [ 5.87422492  3.55925536]
+:  [-5.41416626 -2.70759108]]
