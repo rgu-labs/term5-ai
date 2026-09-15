@@ -24,7 +24,7 @@ python3 -m venv .venv
 
 * Решение
 
-#+begin_src python :results output :hlines
+#+begin_src python :results output
 import random
 import time
 import numpy as np
@@ -87,9 +87,7 @@ plt.show()
 #+end_src
 
 #+RESULTS:
-: iterations 6
+: iterations 9
 : centroids
-: [[-4.06721945  6.63870213]
-:  [ 4.78015489 -6.05388542]
-:  [ 5.87422492  3.55925536]
-:  [-5.41416626 -2.70759108]]
+: [[-5.09205573  0.97246596]
+:  [ 4.6997463   0.03607009]]

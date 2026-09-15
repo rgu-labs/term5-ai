@@ -1,0 +1,95 @@
+#+title: Lab3
+#+author: koftamainee
+
+* Задание
+Реализовать линейную регрессию на ПАЙТОН
+1. Даны =x= и =y=, реализовать метод наименьших квадратов ВРУЧНУЮ через ПИТОН
+2. То же самое, реализовать через готовые либы
+3. Сравнить результаты
+4. Изобразить на графике и вывести уравнение в консоль
+5. Вывести =RSS=, =MSE=
+
+* Окружение
+#+begin_src bash :results output
+python3 -m venv .venv
+.venv/bin/pip install --quiet matplotlib numpy
+.venv/bin/python -c "import matplotlib, numpy; print('deps ok')"
+#+end_src
+
+#+RESULTS:
+: deps ok
+
+* Решение
+
+#+begin_src python :results output
+import random
+import time
+import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+
+seed = int(time.time())
+random.seed(seed)
+np.random.seed(seed)
+
+n = random.randint(20, 50)
+x_min, x_max = random.uniform(-10, -1), random.uniform(1, 10)
+x = np.sort(np.random.uniform(x_min, x_max, n))
+
+k_true = round(random.uniform(-3, 3), 2)
+b_true = round(random.uniform(-5, 5), 2)
+noise_std = random.uniform(0.5, 3.0)
+
+noise = np.random.normal(0, noise_std, n)
+y = k_true * x + b_true + noise
+
+print(f"True equation: y = {k_true}x + {b_true}")
+print(f"Generated {n} points, noise std={noise_std:.2f}")
+print()
+
+x_mean = np.mean(x)
+y_mean = np.mean(y)
+k_manual = np.sum((x - x_mean) * (y - y_mean)) / np.sum((x - x_mean) ** 2)
+b_manual = y_mean - k_manual * x_mean
+
+k_lib, b_lib = np.polyfit(x, y, 1)
+
+y_pred_manual = k_manual * x + b_manual
+y_pred_lib = k_lib * x + b_lib
+
+rss_manual = np.sum((y - y_pred_manual) ** 2)
+mse_manual = rss_manual / n
+rss_lib = np.sum((y - y_pred_lib) ** 2)
+mse_lib = rss_lib / n
+
+print(f"Manual:   y = {k_manual:.4f}x + {b_manual:.4f}")
+print(f"Library:  y = {k_lib:.4f}x + {b_lib:.4f}")
+print(f"Diff k: {abs(k_manual - k_lib):.2e}, Diff b: {abs(b_manual - b_lib):.2e}")
+print()
+print(f"Manual  RSS={rss_manual:.4f}  MSE={mse_manual:.4f}")
+print(f"Library RSS={rss_lib:.4f}  MSE={mse_lib:.4f}")
+
+plt.scatter(x, y, color='black', s=20, label='data')
+x_line = np.linspace(x.min(), x.max(), 200)
+plt.plot(x_line, k_true * x_line + b_true, 'g-', linewidth=1, label=f'true: y={k_true}x+{b_true}')
+plt.plot(x_line, k_manual * x_line + b_manual, 'r--', label=f'manual: y={k_manual:.2f}x+{b_manual:.2f}')
+plt.plot(x_line, k_lib * x_line + b_lib, 'b:', label=f'library: y={k_lib:.2f}x+{b_lib:.2f}')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title(f'Linear Regression: n={n}')
+plt.legend()
+plt.grid(alpha=0.3)
+plt.show()
+#+end_src
+
+#+RESULTS:
+: True equation: y = -0.23x + -1.08
+: Generated 47 points, noise std=0.53
+:
+: Manual:   y = -0.2275x + -1.0211
+: Library:  y = -0.2275x + -1.0211
+: Diff k: 2.78e-17, Diff b: 2.22e-16
+:
+: Manual  RSS=7.6679  MSE=0.1631
+: Library RSS=7.6679  MSE=0.1631
