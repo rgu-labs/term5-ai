@@ -29,6 +29,7 @@ import random
 import time
 import numpy as np
 import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 random.seed(int(time.time()))
@@ -93,7 +94,6 @@ plt.show()
 #+RESULTS:
 : iterations 4
 : centroids
-:  [[ 3.33009408  8.82117898]
-:  [ 5.37730677 -0.73369868]
-:  [-4.83971875  1.51683159]
-:  [ 2.80742438 -6.48764904]]
+:  [[-1.76014091  5.52221989]
+:  [-5.81784403 -5.45337848]
+:  [ 4.77267898 -4.26344469]]
